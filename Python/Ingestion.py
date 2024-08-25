@@ -16,7 +16,7 @@ def Do():
 
     # Concatenate all DataFrames
     big_df   = pd.concat(df_list, ignore_index=True)
-    big_df['PV'] = big_df['PV']*3
+    big_df['PV'] = big_df['PV']
     print("Fim da Ingestão dos dados.")
     #Retornar DataFrame
     return big_df
