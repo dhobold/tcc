@@ -1,5 +1,7 @@
 
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 def Do(big_df):
@@ -15,6 +17,13 @@ def Do(big_df):
 
     #Criar uma coluna com a hora
     big_df['hora'] = big_df['datahora'].dt.hour
+
+    #Criar uma coluna com a data e a hora
+    big_df['_dataHora'] = big_df['datahora'].dt.strftime('%Y-%m-%d %H:00')
+
+
+    #Criar uma coluna com o minuto
+    big_df['minuto'] = big_df['datahora'].dt.minute
 
     #Passar valores para maiuscula
     big_df['nivel_1'] = big_df['nivel_1'].str.upper()
@@ -49,8 +58,6 @@ def Do(big_df):
     #Retornar DataFrame
     return big_df,df_var
 
-
-
 def cycle(df):
   #Se for variavel de ciclo, entao ignorar ciclos maiores que: 
     # L#1 a L#7  = 18 >= ciclo =< 35
@@ -76,3 +83,15 @@ def remove_outlier(df_in, col_name):
     fence_high = q3+1.5*iqr
     df_out = df_in.loc[(df_in[col_name] > fence_low) & (df_in[col_name] < fence_high)]
     return df_out
+
+# Função para normalizar os dados de cada grupo
+def normalizar_clusters(df):
+    scaler = MinMaxScaler()
+    df['PV'] = scaler.fit_transform(df[['PV']])
+    return df
+
+# Função para padronizar os dados de cada grupo
+def standardize_group(df):
+    scaler = StandardScaler()
+    df['PV'] = scaler.fit_transform(df[['PV']])
+    return df
