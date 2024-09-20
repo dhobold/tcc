@@ -14,7 +14,9 @@ import Reporting as reporting
 
 
 #Criar pastas para armazenar as imagens e relatório
-folder = Path("c:\\ftp\\Reports\\Images")
+current_directory = Path(__file__).parent
+folder = Path(str(current_directory)+"\\Reports\\Images")
+
 if not folder.exists():
     folder.mkdir(parents=True, exist_ok=True)
 
@@ -36,7 +38,7 @@ big_df,df_var = treatment.Do(big_df)
 
 
 #Especificar quais variaveis queremos gerar o relatorio
-#df_var = df_var[df_var['nivel_1']=='LINHA 2']
+df_var = df_var[df_var['nivel_1']=='LINHA 2']
 #df_var = df_var[df_var['nivel_2']=='COS']
 #df_var = df_var[df_var['nivel_3']=='TEMPO CT']
 #df_var = df_var[df_var['nivel_4']=='CENTRO ESQUERDO']

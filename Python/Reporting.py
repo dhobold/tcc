@@ -1,7 +1,9 @@
 import ProgressBar as pb
 from fpdf import FPDF
+from pathlib import Path
 
-path = "c:\\ftp\\Reports\\"
+current_directory = Path(__file__).parent
+path = str(current_directory)+"\\Reports\\"
 #GERAR PDF
 
 def createPage(pdf,title,score):

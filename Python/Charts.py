@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt, table
 from matplotlib.ticker import MaxNLocator
 import numpy as np
 from scipy import stats
+from pathlib import Path
 from sklearn.discriminant_analysis import StandardScaler
 from sklearn.ensemble import IsolationForest
 import pandas as pd
@@ -13,8 +14,9 @@ from matplotlib.ticker import MaxNLocator
 import matplotlib.dates as mdates
 from scipy.stats import f_oneway
 
-folder = "c:\\ftp\\Reports\\Images\\"
-#folder =  "C:\\Users\\pohed\\OneDrive\\DIH\\Pós FACENS\\TCC\\Reports\\Images\\"
+current_directory = Path(__file__).parent
+folder = str(current_directory)+"\\Reports\\Images\\"
+
 ######################################################
 #Gráfico 1 - Linha do tempo mais 3x desvio padrão
 ######################################################
