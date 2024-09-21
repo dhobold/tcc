@@ -1,0 +1,465 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Análise de anomalias em processos industriais</title>
+        <!-- Link do CSS do Bootstrap -->
+        <link
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            rel="stylesheet">
+        <!-- Inclua os estilos do DataTables e Bootstrap -->
+        <link rel="stylesheet"
+            href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+            rel="stylesheet">
+
+        <style>
+        /* Estilos para o card no rodapé */
+        /* .notification-card {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px; 
+            z-index: 1050; 
+            display: none; 
+        } */
+
+        .search-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .search-container input[type="text"] {
+            padding-left: 30px; /* Ajusta o padding para não sobrepor o ícone */
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888; /* Cor do ícone */
+        }
+        #myInput {
+            background-position: 10px 12px; /* Position the search icon */
+            background-repeat: no-repeat; /* Do not repeat the icon image */
+            width: 100%; /* Full-width */
+            font-size: 14px; /* Increase font-size */
+            padding: 12px 20px 12px 40px; /* Add some padding */
+            border: 1px solid #ddd; /* Add a grey border */
+            margin-bottom: 12px; /* Add some space below the input */
+        }
+        
+        #tabela-dados {
+            border-collapse: collapse; /* Collapse borders */
+            width: 100%; /* Full-width */
+            border: 1px solid #ddd; /* Add a grey border */
+            font-size: 14px; /* Increase font-size */
+        }
+        
+        #tabela-dados th, #tabela-dados td {
+            text-align: left; /* Left-align text */
+            padding: 10px; /* Add padding */
+        }
+        
+        #tabela-dados tr {
+            /* Add a bottom border to all table rows */
+            border-bottom: 1px solid #ddd;
+        }
+        
+        #tabela-dados tr.header, #tabela-dados tr:hover {
+            /* Add a grey background color to the table header and on hover */
+            background-color: #f1f1f1;
+        }
+
+    </style>
+
+    </head>
+    <body class="container mt-4">
+        <h3 class="text-center">Análise comportamental em múltiplas variáves de processo de máquinas industriais</h3>
+
+        <!-- cards de aviso -->
+        <div id="notificationCardSuccess"
+            class="card fixed-bottom d-none fade w-50 mx-auto mb-3">
+            <div class="card-body bg-success text-white">
+                <p id="notificationMessage" class="mb-0"></p>
+            </div>
+        </div>
+
+        <div id="notificationCardError"
+            class="card fixed-bottom d-none fade w-50 mx-auto mb-3">
+            <div class="p-3 mb-3 bg-danger text-white">
+                <p id="notificationMessageError" class="mb-0"></p>
+            </div>
+        </div>
+
+        <!-- Modal de Carregamento -->
+        <div class="modal fade" id="loadingModal" tabindex="-1"
+            aria-labelledby="loadingModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Carregando...</span>
+                        </div>
+                        <p class="mt-3">Aguarde o processamento...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- modal de detalhes/graficos -->
+        <div class="modal fade" id="modalDetalhes" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <!-- Adiciona modal-lg para um modal maior -->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5
+                            class="modal-title d-flex justify-content-between w-100"
+                            id="modal_title">
+                            <span id="modal_variavel">Análise da variável:
+                                XYZ</span>
+                            <span id="modal_score" class="ml-auto">Score:
+                                0.999</span>
+                        </h5>
+
+                        <button type="button" class="close" data-dismiss="modal"
+                            aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <img id="modalr1_graph" src alt="Gráfico r1"
+                                    class="img-fluid" />
+                            </div>
+                            <div class="col-md-6">
+                                <img id="modalr2_graph" src alt="Gráfico r2"
+                                    class="img-fluid" />
+                            </div>
+                            <div class="col-md-6">
+                                <img id="modalr3_graph" src alt="Gráfico r3"
+                                    class="img-fluid" />
+                            </div>
+                            <div class="col-md-6">
+                                <img id="modalr4_graph" src alt="Gráfico r4"
+                                    class="img-fluid" />
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                            data-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- definicao de variaveis -->
+        <div class="container mt-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Defina as variáveis para a análise</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+
+                        <div class="col">
+                            <label for="selectNivel2" class="form-label">Nível
+                                2</label>
+                            <select id="selectNivel2" class="form-control">
+                                <option value selected disabled>Escolha uma
+                                    opção</option>
+                            </select>
+                        </div>
+
+                        <div class="col">
+                            <label for="selectTipo"
+                                class="form-label">Tipo</label>
+                            <select id="selectTipo" class="form-control">
+                                <option value selected disabled>Escolha uma
+                                    opção</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-success"
+                        onclick="postSelectedData()">Analisar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- resultado da analise -->
+        <div class="container mt-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Resultado da análise</h5>
+                
+                    <button class="btn btn-primary ms-auto">
+                        <a href="/download-pdf" class="text-white text-decoration-none" download>Download relatório em PDF</a>
+                    </button>
+                </div>
+                
+                
+                <div class="card-body">
+                    <input type="text" id="myInput" onkeyup="SerchFunction()"
+                        placeholder="Procure por variável...">
+                    <table id="tabela-dados">
+                        <thead>
+                            <tr class="header">
+                                <th scope="col">Data/Hora</th>
+                                <th scope="col">Variável</th>
+                                <th scope="col">Nível 2</th>
+                                <th scope="col">Tipo</th>
+                                <th scope="col">Unidade</th>
+                                <th scope="col">PV</th>
+                                <th scope="col">Gráficos</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts ---------------------------------------------------------->
+        <script>  
+        async function fetchDados() {
+            const response = await fetch('/getDataAnalysis');
+            const dados = await response.json();
+
+            const tabelaBody = document.getElementById('tabela-dados').getElementsByTagName('tbody')[0];
+
+            // Limpa todos os dados existentes na tabela
+            tabelaBody.innerHTML = '';
+
+            // Adiciona as novas linhas de dados
+            dados.forEach(item => {
+                const row = tabelaBody.insertRow();
+
+                // Cria células para cada valor de item visível
+                row.insertCell(0).textContent = item.datahora;
+                row.insertCell(1).textContent = item.variavel;
+                row.insertCell(2).textContent = item.nivel_2;
+                row.insertCell(3).textContent = item.tipo;
+                row.insertCell(4).textContent = item.unidade;
+                row.insertCell(5).textContent = item.PV;
+
+                // Cria a célula para o botão "Visualizar"
+                const cellButton = row.insertCell(6);
+                const button = document.createElement('button');
+                button.textContent = 'Visualizar';
+                button.className = 'btn btn-primary'; // Adiciona as classes do Bootstrap
+
+                // Atribui valores ocultos como atributos data-*
+                button.setAttribute('data-r1_graph', item.r1_graph);
+                button.setAttribute('data-r2_graph', item.r2_graph);
+                button.setAttribute('data-r3_graph', item.r3_graph);
+                button.setAttribute('data-r4_graph', item.r4_graph);
+                button.setAttribute('data-variavel', item.variavel);
+                button.setAttribute('data-Score', item.Score);
+
+                // Adiciona o evento de clique para abrir o modal
+                button.setAttribute('data-toggle', 'modal');
+                button.setAttribute('data-target', '#modalDetalhes');
+                button.onclick = function() {
+                    abrirModal(this); // Função para abrir o modal e passar os dados
+                };
+
+                // Adiciona o botão à célula
+                cellButton.appendChild(button);
+            });
+        }
+
+
+        function abrirModal(button) {
+            //Obtém os dados armazenados no botão
+            const r1_graph = button.getAttribute('data-r1_graph');
+            const r2_graph = button.getAttribute('data-r2_graph');
+            const r3_graph = button.getAttribute('data-r3_graph');
+            const r4_graph = button.getAttribute('data-r4_graph');
+            const variavel = button.getAttribute('data-variavel');
+            const score = button.getAttribute('data-Score');
+
+            // Define os valores no modal
+            document.getElementById('modalr1_graph').src = 'data:image/png;base64,' + r1_graph;
+            document.getElementById('modalr2_graph').src = 'data:image/png;base64,' + r2_graph;
+            document.getElementById('modalr3_graph').src = 'data:image/png;base64,' + r3_graph;
+            document.getElementById('modalr4_graph').src = 'data:image/png;base64,' + r4_graph;
+            // Atualiza o título do modal com os valores de 'variavel' e 'score'
+            document.getElementById('modal_variavel').textContent = `Análise da variável: ${variavel}`;
+            document.getElementById('modal_score').textContent = `Score: ${score}`;
+
+            // Abre o modal
+            $('#modalDetalhes').modal('show');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await ingestionAndTreatment(); // Executa a função de ingestão e tratamento ao carregar a página
+                await CarregaLista(); // Executa a função para carregar as listas após a conclusão do tratamento
+            } catch (error) {
+                console.error('Erro durante a inicialização:', error);
+            }
+        });
+
+        async function ingestionAndTreatment() {
+            try {
+                const response = await fetch(`/ingestionAndTreatment`);
+                const data = await response.json();
+
+                // Exibe o card de notificação com a mensagem
+                showNotificationSuccess(data.resultado);
+
+            } catch (error) {
+                console.error('Erro iniciar análise:', error);
+            }
+        }
+    
+        async function CarregaLista() {
+            try {
+                const response = await fetch(`/LoadList`);
+                const data = await response.json();
+                if (data.nivel_2 && Array.isArray(data.nivel_2)) {
+                    const selectBox = document.getElementById('selectNivel2');
+                    selectBox.innerHTML = '<option value="" selected disabled>Escolha uma opção</option>';
+                    data.nivel_2.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.text = item;
+                        selectBox.appendChild(option);
+                    });
+                }
+                if (data.tipo && Array.isArray(data.tipo)) {
+                    const selectBox = document.getElementById('selectTipo');
+                    selectBox.innerHTML = '<option value="" selected disabled>Escolha uma opção</option>';
+                    data.tipo.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item;
+                        option.text = item;
+                        selectBox.appendChild(option);
+                    });
+                } else {
+                    console.error('Dados inválidos recebidos:', data);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar listas:', error);
+            }
+        }
+
+        // Função para exibir o card de sucesso com fade
+        function showNotificationSuccess(message) {
+            const notificationCardSuccess = document.getElementById('notificationCardSuccess');
+            const notificationMessage = document.getElementById('notificationMessage');
+            notificationMessage.textContent = message;
+            
+            notificationCardSuccess.classList.remove('d-none'); // Remove a classe que oculta o card
+            notificationCardSuccess.classList.add('show'); // Adiciona a classe 'show' para exibir o fade
+
+            // Remove o card após 5 segundos
+            setTimeout(() => {
+                notificationCardSuccess.classList.remove('show'); // Remove a classe 'show' para o fade de saída
+                setTimeout(() => {
+                    notificationCardSuccess.classList.add('d-none'); // Esconde o card após o fade
+                }, 300); // Duração da transição do fade (ajuste conforme necessário)
+            }, 5000);
+        }
+
+        // Função para exibir o card de erro com fade
+        function showNotificationError(message) {
+            const notificationCardError = document.getElementById('notificationCardError');
+            const notificationMessageError = document.getElementById('notificationMessageError');
+            notificationMessageError.textContent = message;
+
+            notificationCardError.classList.remove('d-none');
+            notificationCardError.classList.add('show');
+
+            // Remove o card após 5 segundos
+            setTimeout(() => {
+                notificationCardError.classList.remove('show');
+                setTimeout(() => {
+                    notificationCardError.classList.add('d-none');
+                }, 300);
+            }, 5000);
+        }
+
+
+        async function postSelectedData() {
+            // Captura os valores selecionados
+            const nivel2 = document.getElementById('selectNivel2').value;
+            const tipo = document.getElementById('selectTipo').value;
+
+            // Cria o objeto com os dados para enviar
+            const postData = {
+                nivel_2: nivel2,
+                tipo: tipo
+            };
+
+            // Mostra o modal de carregamento
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();  // Exibe o modal
+
+            try {
+                // Faz o POST para o endpoint "AnalyzingData"
+                const response = await fetch('/AnalyzingData', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+
+                const result = await response.json();
+                if (result.erro) {
+                    showNotificationError(result.erro);
+                } else {
+                    // showNotificationSuccess(result.resultado);
+                    fetchDados();
+                }
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+            } finally {
+                // Oculta o modal de carregamento após o processamento, seja sucesso ou erro
+                loadingModal.hide();  // Fecha o modal
+            }
+        }
+
+        function SerchFunction() {
+            // Declare variables
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("myInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("tabela-dados");
+            tr = table.getElementsByTagName("tr");
+
+            // Loop through all table rows, and hide those who don't match the search query
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[1];
+                if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+                }
+            }
+        }
+
+    </script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script
+            src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script
+            src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    </body>
+</html>
