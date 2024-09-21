@@ -12,7 +12,7 @@ def Do(big_df):
     # Convert the date column to date format
     big_df["datahora"] = pd.to_datetime(big_df["datahora"])
 
-    #Criar uma coluna com a data
+    #Criar uma coliuna com a data
     big_df['data'] = big_df['datahora'].dt.date
 
     #Criar uma coluna com a hora
