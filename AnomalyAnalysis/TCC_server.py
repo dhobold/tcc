@@ -88,6 +88,7 @@ def AnalyzingData(data):
         cm.deleteAllFilesInFolder(cm.path_images)
         setVariables(data)
         _aux_var = analyzing.Do(_df_var, _big_df)
+        reportingData()
     except Exception as e:
         print(f"Erro: {e.args[0]}")
         

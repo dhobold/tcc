@@ -311,15 +311,22 @@
         });
 
         async function ingestionAndTreatment() {
+            
+            // Mostra o modal de carregamento
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                loadingModal.show();  // Exibe o modal
+
             try {
                 const response = await fetch(`/ingestionAndTreatment`);
                 const data = await response.json();
 
                 // Exibe o card de notificação com a mensagem
-                showNotificationSuccess(data.resultado);
-
+                //showNotificationSuccess(data.resultado);
             } catch (error) {
-                console.error('Erro iniciar análise:', error);
+                console.error('Erro iniciar análise:', error);                
+            }finally{
+                // Oculta o modal de carregamento após o processamento, seja sucesso ou erro
+                loadingModal.hide();  // Fecha o modal
             }
         }
     

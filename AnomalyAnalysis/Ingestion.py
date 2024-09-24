@@ -7,7 +7,7 @@ def Do():
     
     print("Inicio da Ingestão dos dados.")
     #Importar dados da pasta
-    path = 'C:\\Users\\pohed\\OneDrive\\DIH\\Pós FACENS\\TCC\\Ingestion'
+    path = 'Ingestion'
     # Get CSV files list from a folder
     csv_files = glob.glob(path + "/*.csv")
 
